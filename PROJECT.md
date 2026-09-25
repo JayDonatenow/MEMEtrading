@@ -49,19 +49,18 @@ A website that helps users discover and evaluate meme coins before they rug. On 
 - Combine on-chain/market data with social signal (X/Twitter) in one place.
 
 ## Open Questions / To Decide
-- Which meme coin data API(s) to use (chain(s) supported, rate limits, cost)?
-- Which blockchain(s) to support first (Solana, Ethereum, Base, etc.)?
-- Exact rug-detection criteria/scoring formula.
-- X API access tier needed (search/filtered stream) and cost.
-- Tech stack (frontend framework, backend, hosting).
-- Real-time updates vs. periodic refresh.
-- How often to re-scan watched/tracked coins for score history (polling interval vs. event-driven via chain data).
-- Alert delivery: which channel(s) to build first (push, email, Discord, Telegram)?
-- Wallet clustering heuristics: what data source(s) give funding-source/transaction-timing data cheaply enough at scale?
-- Data storage for historical scores (time-series DB vs. regular DB with periodic snapshots).
+- Real-time updates vs. periodic refresh (currently client polls every 60s; consider websockets/SSE later).
+- How often an external cron should hit `/api/scan` to re-check watched coins (not yet scheduled — needs a cron trigger, e.g. Vercel Cron, wired up).
+- Wallet clustering heuristics: what data source(s) give funding-source/transaction-timing data cheaply enough at scale (current approach is best-effort against public Solana RPC and rate-limits easily).
+- Push notifications for alerts (currently Discord webhook + email via Resend; no push channel yet).
 
 ## Tech Stack
-_TBD_
+- Next.js (App Router) + TypeScript + Tailwind CSS, deployed on Vercel
+- Prisma + Postgres (Neon via Vercel's Postgres integration)
+- DexScreener public API (token-profiles/token-boosts for discovery, tokens/v1 for market data)
+- Solana web3.js for on-chain safety checks
+- X API v2 for coin-relevant tweets
+- Discord webhook + Resend for watchlist alert delivery
 
 ## Notes
 _(Add more details here as we go)_

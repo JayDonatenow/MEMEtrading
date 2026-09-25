@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPairsForTokens } from "@/lib/dexscreener";
 import { fullEvaluate } from "@/lib/evaluate-coin";
 import { prisma } from "@/lib/db";
+import { sendAlert } from "@/lib/alerts";
 
 // Re-scans every coin on at least one watchlist and snapshots its safety score, flagging
 // any watchlist item whose alert threshold was crossed. Intended to be hit periodically by
@@ -61,8 +62,15 @@ export async function POST(request: Request) {
           where: { id: item.id },
           data: { lastAlertedAt: new Date() },
         });
-        // TODO: wire up actual delivery (email/push/Discord/Telegram) once a channel is chosen —
-        // see PROJECT.md open questions. For now this just records that the alert fired.
+        await sendAlert({
+          coinSymbol: coin.symbol,
+          coinName: coin.name,
+          mintAddress: coin.mintAddress,
+          previousScore: coin.safetyScore,
+          currentScore: evaluation.score.score,
+          threshold,
+          notifyEmail: item.notifyEmail,
+        }).catch((err) => console.error("Failed to send alert:", err));
       }
     }
   }
