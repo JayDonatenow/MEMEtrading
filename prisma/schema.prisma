@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// A meme coin we've discovered and are tracking. One row per token mint address.
+model Coin {
+  id              String   @id @default(cuid())
+  chain           String   @default("solana")
+  mintAddress     String   @unique
+  pairAddress     String?
+  symbol          String
+  name            String
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  pairCreatedAt   DateTime?
+  updatedAt       DateTime @updatedAt
+
+  // Latest known market data (denormalized for fast list rendering; history lives in SafetyScoreSnapshot)
+  priceUsd        Float?
+  liquidityUsd    Float?
+  marketCapUsd    Float?
+  volume24hUsd    Float?
+
+  // Latest safety assessment
+  safetyScore     Int?
+  scoreLabel      String?
+
+  snapshots       SafetyScoreSnapshot[]
+  watchlistItems  WatchlistItem[]
+
+  @@index([safetyScore])
+  @@index([pairCreatedAt])
+}
+
+// A point-in-time safety score reading for a coin, so we can show trend and diff what changed.
+model SafetyScoreSnapshot {
+  id              String   @id @default(cuid())
+  coinId          String
+  coin            Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  score           Int
+  liquidityUsd    Float?
+  topHolderPct    Float?
+  clusteredPct    Float?
+  mintRevoked     Boolean?
+  freezeRevoked   Boolean?
+  lpBurnedOrLocked Boolean?
+
+  // Human-readable events that changed the score since the previous snapshot, e.g. "LP unlocked", "dev wallet sold 15%"
+  events          String?
+
+  @@index([coinId, createdAt])
+}
+
+// An anonymous (cookie-based) user's saved coin + optional alert threshold.
+model WatchlistItem {
+  id                String   @id @default(cuid())
+  anonId            String
+  coinId            String
+  coin              Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  // Alert when the coin's safety score drops below this value (null = alert on any drop)
+  alertBelowScore   Int?
+  notifyEmail       String?
+  lastAlertedAt     DateTime?
+
+  @@unique([anonId, coinId])
+  @@index([anonId])
+}
