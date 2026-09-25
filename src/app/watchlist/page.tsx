@@ -41,7 +41,7 @@ export default function WatchlistPage() {
       ) : items.length === 0 ? (
         <p className="text-zinc-500">
           Nothing here yet.{" "}
-          <Link href="/" className="text-emerald-400 hover:underline">
+          <Link href="/" className="text-violet-400 hover:underline">
             Browse coins
           </Link>{" "}
           and add some to your watchlist.

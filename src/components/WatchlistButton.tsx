@@ -41,7 +41,7 @@ export function WatchlistButton({ mintAddress }: { mintAddress: string }) {
         className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
           watching
             ? "bg-white/10 text-zinc-200 hover:bg-white/15"
-            : "bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+            : "bg-violet-500 text-violet-50 hover:bg-violet-400"
         }`}
       >
         {watching ? "Watching ✓" : "Add to watchlist"}
