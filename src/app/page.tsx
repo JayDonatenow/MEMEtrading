@@ -9,6 +9,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [minScore, setMinScore] = useState(0);
+  const [sortBy, setSortBy] = useState<"safety" | "liquidity" | "marketCap" | "volume" | "age">("safety");
 
   async function load() {
     setError(null);
@@ -32,7 +33,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const visible = coins.filter((c) => c.safetyScore >= minScore);
+  const SORTERS: Record<typeof sortBy, (a: CoinListItem, b: CoinListItem) => number> = {
+    safety: (a, b) => b.safetyScore - a.safetyScore,
+    liquidity: (a, b) => (b.liquidityUsd ?? -1) - (a.liquidityUsd ?? -1),
+    marketCap: (a, b) => (b.marketCapUsd ?? -1) - (a.marketCapUsd ?? -1),
+    volume: (a, b) => (b.volume24hUsd ?? -1) - (a.volume24hUsd ?? -1),
+    age: (a, b) => (a.ageMinutes ?? Infinity) - (b.ageMinutes ?? Infinity),
+  };
+
+  const visible = coins.filter((c) => c.safetyScore >= minScore).sort(SORTERS[sortBy]);
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
@@ -43,7 +52,21 @@ export default function Home() {
             Newly launched coins, ranked by our rug-pull Safety % score.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="text-sm text-zinc-400">
+            Sort by
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="ml-2 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-zinc-200"
+            >
+              <option value="safety">Safety %</option>
+              <option value="liquidity">Liquidity</option>
+              <option value="marketCap">Market cap</option>
+              <option value="volume">24h volume</option>
+              <option value="age">Newest</option>
+            </select>
+          </label>
           <label className="text-sm text-zinc-400">
             Min safety
             <select

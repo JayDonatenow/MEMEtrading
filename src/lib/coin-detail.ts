@@ -1,6 +1,7 @@
 import { getPairsForTokens } from "@/lib/dexscreener";
 import { fullEvaluate, pairAgeMinutes } from "@/lib/evaluate-coin";
 import { prisma } from "@/lib/db";
+import type { ScoreBreakdownItem } from "@/lib/safety-score";
 
 export interface CoinDetail {
   mintAddress: string;
@@ -18,6 +19,7 @@ export interface CoinDetail {
   safetyScore: number;
   scoreLabel: string;
   reasons: string[];
+  breakdown: ScoreBreakdownItem[];
   topHolderPct: number | null;
   clusteredPct: number | null;
   mintAuthorityRevoked: boolean | null;
@@ -114,6 +116,7 @@ export async function getCoinDetail(mintAddress: string): Promise<CoinDetail | n
     safetyScore: evaluation.score.score,
     scoreLabel: evaluation.score.label,
     reasons: evaluation.score.reasons,
+    breakdown: evaluation.score.breakdown,
     topHolderPct: evaluation.topHolderPct,
     clusteredPct: evaluation.clusteredPct,
     mintAuthorityRevoked: evaluation.mintAuthorityRevoked,
