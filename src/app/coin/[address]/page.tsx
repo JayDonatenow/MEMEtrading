@@ -59,6 +59,7 @@ export default async function CoinPage({ params }: PageProps<"/coin/[address]">)
         <ul className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <CheckRow label="Mint authority renounced" value={coin.mintAuthorityRevoked} />
           <CheckRow label="Freeze authority renounced" value={coin.freezeAuthorityRevoked} />
+          <CheckRow label="Liquidity locked or burned" value={coin.lpBurnedOrLocked} />
         </ul>
         {coin.reasons.length > 0 && (
           <ul className="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm text-zinc-400">

@@ -15,6 +15,17 @@ function buySellRatio(pair: DexScreenerPair): number | null {
   return t.buys / total;
 }
 
+// Venues where liquidity is protocol-controlled by design, not withdrawable by the token
+// creator: pump.fun's bonding curve, and PumpSwap (their in-house AMM for graduated tokens).
+// Any other venue (Raydium, Orca, etc.) might still have burned/locked LP, but verifying that
+// generically requires per-DEX pool parsing we don't do, so it's left as unknown (null) rather
+// than guessed — missing data never helps the score, per the scorer's own convention.
+const PROTOCOL_LOCKED_DEX_IDS = new Set(["pumpfun", "pumpswap"]);
+
+function inferLpLockStatus(pair: DexScreenerPair): boolean | null {
+  return PROTOCOL_LOCKED_DEX_IDS.has(pair.dexId) ? true : null;
+}
+
 // Fast score using only DexScreener market data — no RPC calls — for rendering the list view.
 export function quickEvaluate(pair: DexScreenerPair) {
   const input: SafetyScoreInput = {
@@ -25,6 +36,7 @@ export function quickEvaluate(pair: DexScreenerPair) {
     topHolderPct: null,
     clusteredPct: null,
     buySellRatio24h: buySellRatio(pair),
+    lpBurnedOrLocked: inferLpLockStatus(pair),
   };
   return computeSafetyScore(input);
 }
@@ -35,6 +47,7 @@ export interface FullEvaluation {
   clusteredPct: number | null;
   mintAuthorityRevoked: boolean | null;
   freezeAuthorityRevoked: boolean | null;
+  lpBurnedOrLocked: boolean | null;
 }
 
 // Full score including on-chain checks — used for the coin detail page, where the extra
@@ -61,6 +74,8 @@ export async function fullEvaluate(pair: DexScreenerPair): Promise<FullEvaluatio
     clusteredPct = summarizeClustering(nonPoolHolders, funders).clusteredPct;
   }
 
+  const lpBurnedOrLocked = inferLpLockStatus(pair);
+
   const input: SafetyScoreInput = {
     liquidityUsd: pair.liquidity?.usd ?? null,
     ageMinutes: pairAgeMinutes(pair),
@@ -69,6 +84,7 @@ export async function fullEvaluate(pair: DexScreenerPair): Promise<FullEvaluatio
     topHolderPct,
     clusteredPct,
     buySellRatio24h: buySellRatio(pair),
+    lpBurnedOrLocked,
   };
 
   return {
@@ -77,5 +93,6 @@ export async function fullEvaluate(pair: DexScreenerPair): Promise<FullEvaluatio
     clusteredPct,
     mintAuthorityRevoked: authorityInfo?.mintAuthorityRevoked ?? null,
     freezeAuthorityRevoked: authorityInfo?.freezeAuthorityRevoked ?? null,
+    lpBurnedOrLocked,
   };
 }

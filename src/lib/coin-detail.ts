@@ -22,6 +22,7 @@ export interface CoinDetail {
   clusteredPct: number | null;
   mintAuthorityRevoked: boolean | null;
   freezeAuthorityRevoked: boolean | null;
+  lpBurnedOrLocked: boolean | null;
 }
 
 // Fetches live market + on-chain data for a coin, upserts it into the DB, and (when something
@@ -76,6 +77,9 @@ export async function getCoinDetail(mintAddress: string): Promise<CoinDetail | n
   if (lastSnapshot?.freezeRevoked === false && evaluation.freezeAuthorityRevoked === true) {
     events.push("Freeze authority was renounced");
   }
+  if (lastSnapshot?.lpBurnedOrLocked === false && evaluation.lpBurnedOrLocked === true) {
+    events.push("Liquidity was locked or burned");
+  }
 
   const isStale = !lastSnapshot || Date.now() - lastSnapshot.createdAt.getTime() > 15 * 60_000;
   if (isStale || events.length > 0) {
@@ -88,6 +92,7 @@ export async function getCoinDetail(mintAddress: string): Promise<CoinDetail | n
         clusteredPct: evaluation.clusteredPct,
         mintRevoked: evaluation.mintAuthorityRevoked,
         freezeRevoked: evaluation.freezeAuthorityRevoked,
+        lpBurnedOrLocked: evaluation.lpBurnedOrLocked,
         events: events.length > 0 ? JSON.stringify(events) : null,
       },
     });
@@ -113,5 +118,6 @@ export async function getCoinDetail(mintAddress: string): Promise<CoinDetail | n
     clusteredPct: evaluation.clusteredPct,
     mintAuthorityRevoked: evaluation.mintAuthorityRevoked,
     freezeAuthorityRevoked: evaluation.freezeAuthorityRevoked,
+    lpBurnedOrLocked: evaluation.lpBurnedOrLocked,
   };
 }

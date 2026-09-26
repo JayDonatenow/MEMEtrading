@@ -6,6 +6,7 @@ export interface SafetyScoreInput {
   topHolderPct: number | null; // largest single non-LP holder, %
   clusteredPct: number | null; // % of top holders that appear linked to one funder
   buySellRatio24h: number | null; // buys / (buys + sells), 0-1
+  lpBurnedOrLocked: boolean | null; // liquidity pool tokens burned/protocol-locked vs. dev-withdrawable
 }
 
 export interface SafetyScoreResult {
@@ -18,9 +19,10 @@ const WEIGHTS = {
   mintAuthority: 25,
   freezeAuthority: 15,
   liquidity: 20,
-  topHolder: 20,
-  clustering: 15,
+  topHolder: 15,
+  clustering: 10,
   buyPressure: 5,
+  lpLocked: 10,
 };
 
 // A simple, explainable rule-based scorer (not ML) so every point can be traced to a signal.
@@ -64,6 +66,12 @@ export function computeSafetyScore(input: SafetyScoreInput): SafetyScoreResult {
   if (input.buySellRatio24h !== null) {
     if (input.buySellRatio24h >= 0.45) score += WEIGHTS.buyPressure;
     else reasons.push("Sell pressure outweighs buy pressure over the last 24h");
+  }
+
+  if (input.lpBurnedOrLocked) {
+    score += WEIGHTS.lpLocked;
+  } else if (input.lpBurnedOrLocked === false) {
+    reasons.push("Liquidity isn't locked or burned — it can be pulled at any time");
   }
 
   // Very fresh coins (under ~10 min old) haven't had time to prove anything yet — cap the
