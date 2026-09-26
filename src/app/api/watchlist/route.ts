@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getOrCreateAnonId } from "@/lib/anon";
 import { prisma } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { CoinModel, WatchlistItemModel } from "@/generated/prisma/models";
 
 export async function GET() {
@@ -38,6 +39,15 @@ const addSchema = z.object({
 
 export async function POST(request: Request) {
   const anonId = await getOrCreateAnonId();
+
+  const { allowed } = await checkRateLimit(`watchlist-post:${anonId}`, 20, 10 * 60_000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many watchlist changes — try again in a few minutes" },
+      { status: 429 },
+    );
+  }
+
   const body = addSchema.safeParse(await request.json());
   if (!body.success) {
     return NextResponse.json({ error: body.error.flatten() }, { status: 400 });
@@ -46,6 +56,11 @@ export async function POST(request: Request) {
   const coin = await prisma.coin.findUnique({ where: { mintAddress: body.data.mintAddress } });
   if (!coin) {
     return NextResponse.json({ error: "Unknown coin — view it once before watching it" }, { status: 404 });
+  }
+
+  const existingCount = await prisma.watchlistItem.count({ where: { anonId } });
+  if (existingCount >= 200) {
+    return NextResponse.json({ error: "Watchlist limit reached (200 coins)" }, { status: 429 });
   }
 
   const item = await prisma.watchlistItem.upsert({

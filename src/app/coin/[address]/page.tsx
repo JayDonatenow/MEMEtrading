@@ -5,7 +5,7 @@ import { ScoreBreakdown } from "@/components/ScoreBreakdown";
 import { ScoreHistoryChart } from "@/components/ScoreHistoryChart";
 import { TweetList } from "@/components/TweetList";
 import { WatchlistButton } from "@/components/WatchlistButton";
-import { formatAge, formatPct, formatUsd } from "@/lib/format";
+import { formatAge, formatPct, formatPctChange, formatUsd } from "@/lib/format";
 import { getCoinDetail } from "@/lib/coin-detail";
 
 export default async function CoinPage({ params }: PageProps<"/coin/[address]">) {
@@ -43,6 +43,19 @@ export default async function CoinPage({ params }: PageProps<"/coin/[address]">)
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Stat label="Price" value={formatUsd(coin.priceUsd)} />
+        <Stat
+          label="24h Change"
+          value={formatPctChange(coin.priceChange24h)}
+          valueClassName={
+            coin.priceChange24h === null
+              ? undefined
+              : coin.priceChange24h > 0
+                ? "text-emerald-400"
+                : coin.priceChange24h < 0
+                  ? "text-red-400"
+                  : undefined
+          }
+        />
         <Stat label="Liquidity" value={formatUsd(coin.liquidityUsd)} />
         <Stat label="Market Cap" value={formatUsd(coin.marketCapUsd)} />
         <Stat label="24h Volume" value={formatUsd(coin.volume24hUsd)} />
@@ -91,11 +104,19 @@ export default async function CoinPage({ params }: PageProps<"/coin/[address]">)
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
       <p className="text-xs text-zinc-500">{label}</p>
-      <p className="mt-0.5 font-medium text-zinc-200">{value}</p>
+      <p className={`mt-0.5 font-medium ${valueClassName ?? "text-zinc-200"}`}>{value}</p>
     </div>
   );
 }

@@ -8,6 +8,7 @@ export interface CoinListItem {
   marketCapUsd: number | null;
   volume24hUsd: number | null;
   ageMinutes: number | null;
+  priceChange24h: number | null;
   safetyScore: number;
   scoreLabel: string;
   reasons: string[];

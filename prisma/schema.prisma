@@ -77,3 +77,11 @@ model WatchlistItem {
   @@unique([anonId, coinId])
   @@index([anonId])
 }
+
+// A generic sliding-window rate limit counter, keyed by whatever the caller chooses
+// (e.g. "watchlist-post:<anonId>"). One row per key; the window resets once it's expired.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+}
