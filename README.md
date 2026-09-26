@@ -26,10 +26,18 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 1. Import this repo into Vercel and deploy the branch with the app on it.
 2. In the project's Storage tab, add a Postgres database — this sets `DATABASE_URL` automatically.
-3. Optionally set `SOLANA_RPC_URL`, `X_BEARER_TOKEN`, and `CRON_SECRET` (see `.env.example`).
+3. Optionally set `SOLANA_RPC_URL`, `X_BEARER_TOKEN`, `CRON_SECRET`, and an alert channel
+   (`DISCORD_WEBHOOK_URL` and/or `RESEND_API_KEY`/`RESEND_FROM_EMAIL`) — see `.env.example`.
 4. Redeploy. `npm install` runs `prisma generate` automatically (`postinstall` script), and the
    `build` script runs `prisma migrate deploy` before `next build` so the database schema is
    created/updated on every deploy.
+
+### Watchlist alerts (cron)
+
+`vercel.json` schedules Vercel Cron to hit `/api/scan` once a day, which re-checks every
+watched coin and sends an alert (Discord/email) if its safety score drops below a user's
+threshold. Vercel's free Hobby plan only allows daily cron schedules; upgrading to Pro lets
+you run it more often (e.g. hourly) by editing the `schedule` in `vercel.json`.
 
 ## Tech Stack
 

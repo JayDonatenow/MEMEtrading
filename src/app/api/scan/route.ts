@@ -5,9 +5,10 @@ import { prisma } from "@/lib/db";
 import { sendAlert } from "@/lib/alerts";
 
 // Re-scans every coin on at least one watchlist and snapshots its safety score, flagging
-// any watchlist item whose alert threshold was crossed. Intended to be hit periodically by
-// an external cron (e.g. Vercel Cron) with a shared secret, not called from the browser.
-export async function POST(request: Request) {
+// any watchlist item whose alert threshold was crossed. Hit periodically by Vercel Cron
+// (see vercel.json), which sends GET requests; POST is also accepted for manual/external
+// triggering. Not intended to be called from the browser.
+async function runScan(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (secret) {
     const provided = request.headers.get("authorization")?.replace("Bearer ", "");
@@ -77,3 +78,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ scanned: watchedCoins.length, alertsTriggered });
 }
+
+export const GET = runScan;
+export const POST = runScan;

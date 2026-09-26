@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { SafetyBadge } from "@/components/SafetyBadge";
+import { CoinIcon } from "@/components/CoinIcon";
 import { ScoreHistoryChart } from "@/components/ScoreHistoryChart";
 import { TweetList } from "@/components/TweetList";
 import { WatchlistButton } from "@/components/WatchlistButton";
@@ -20,18 +21,21 @@ export default async function CoinPage({ params }: PageProps<"/coin/[address]">)
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-100">
-            ${coin.symbol} <span className="font-normal text-zinc-500">{coin.name}</span>
-          </h1>
-          <a
-            href={coin.dexUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 inline-block text-xs text-zinc-500 hover:text-zinc-300"
-          >
-            {coin.mintAddress}
-          </a>
+        <div className="flex items-center gap-3">
+          <CoinIcon imageUrl={coin.imageUrl} symbol={coin.symbol} size={48} />
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-100">
+              ${coin.symbol} <span className="font-normal text-zinc-500">{coin.name}</span>
+            </h1>
+            <a
+              href={coin.dexUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-xs text-zinc-500 hover:text-zinc-300"
+            >
+              {coin.mintAddress}
+            </a>
+          </div>
         </div>
         <SafetyBadge score={coin.safetyScore} label={coin.scoreLabel} />
       </div>

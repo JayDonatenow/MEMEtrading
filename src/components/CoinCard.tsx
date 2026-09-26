@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SafetyBadge } from "@/components/SafetyBadge";
+import { CoinIcon } from "@/components/CoinIcon";
 import { formatAge, formatUsd } from "@/lib/format";
 import type { CoinListItem } from "@/lib/types";
 
@@ -10,9 +11,12 @@ export function CoinCard({ coin }: { coin: CoinListItem }) {
       className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-white/20 hover:bg-white/[0.06]"
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate font-semibold text-zinc-100">${coin.symbol}</p>
-          <p className="truncate text-sm text-zinc-500">{coin.name}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <CoinIcon imageUrl={coin.imageUrl} symbol={coin.symbol} size={36} />
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-zinc-100">${coin.symbol}</p>
+            <p className="truncate text-sm text-zinc-500">{coin.name}</p>
+          </div>
         </div>
         <SafetyBadge score={coin.safetyScore} label={coin.scoreLabel} />
       </div>
