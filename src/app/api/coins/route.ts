@@ -50,6 +50,7 @@ export async function GET() {
           marketCapUsd: pair.marketCap ?? null,
           volume24hUsd: pair.volume?.h24 ?? null,
           ageMinutes: pairAgeMinutes(pair),
+          priceChange24h: pair.priceChange?.h24 ?? null,
           safetyScore: score,
           scoreLabel: label,
           reasons,

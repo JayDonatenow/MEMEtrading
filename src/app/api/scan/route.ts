@@ -9,12 +9,14 @@ import { sendAlert } from "@/lib/alerts";
 // (see vercel.json), which sends GET requests; POST is also accepted for manual/external
 // triggering. Not intended to be called from the browser.
 async function runScan(request: Request) {
+  // Vercel's own documented pattern for securing cron endpoints treats a missing secret as
+  // "reject", not "allow" -- an unset CRON_SECRET must not leave this open to the public
+  // internet. Local dev is the one exception, so `npm run dev` stays usable without setup.
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const provided = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (provided !== secret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const provided = request.headers.get("authorization")?.replace("Bearer ", "");
+  const isDev = process.env.NODE_ENV !== "production";
+  if (!isDev && (!secret || provided !== secret)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const watchedCoins = await prisma.coin.findMany({

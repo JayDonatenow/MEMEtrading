@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SafetyBadge } from "@/components/SafetyBadge";
 import { CoinIcon } from "@/components/CoinIcon";
-import { formatAge, formatUsd } from "@/lib/format";
+import { formatAge, formatPctChange, formatUsd } from "@/lib/format";
 import type { CoinListItem } from "@/lib/types";
 
 export function CoinCard({ coin }: { coin: CoinListItem }) {
@@ -18,7 +18,22 @@ export function CoinCard({ coin }: { coin: CoinListItem }) {
             <p className="truncate text-sm text-zinc-500">{coin.name}</p>
           </div>
         </div>
-        <SafetyBadge score={coin.safetyScore} label={coin.scoreLabel} />
+        <div className="flex flex-col items-end gap-1">
+          <SafetyBadge score={coin.safetyScore} label={coin.scoreLabel} />
+          {coin.priceChange24h !== null && (
+            <span
+              className={`text-xs font-medium ${
+                coin.priceChange24h > 0
+                  ? "text-emerald-400"
+                  : coin.priceChange24h < 0
+                    ? "text-red-400"
+                    : "text-zinc-500"
+              }`}
+            >
+              {formatPctChange(coin.priceChange24h)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-sm">

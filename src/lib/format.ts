@@ -16,3 +16,9 @@ export function formatPct(value: number | null): string {
   if (value === null) return "—";
   return `${value.toFixed(1)}%`;
 }
+
+export function formatPctChange(value: number | null): string {
+  if (value === null) return "—";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(1)}%`;
+}
