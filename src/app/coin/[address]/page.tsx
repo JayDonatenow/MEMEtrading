@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { SafetyBadge } from "@/components/SafetyBadge";
 import { CoinIcon } from "@/components/CoinIcon";
+import { ScoreBreakdown } from "@/components/ScoreBreakdown";
 import { ScoreHistoryChart } from "@/components/ScoreHistoryChart";
 import { TweetList } from "@/components/TweetList";
 import { WatchlistButton } from "@/components/WatchlistButton";
@@ -55,19 +56,21 @@ export default async function CoinPage({ params }: PageProps<"/coin/[address]">)
       </div>
 
       <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-        <h2 className="mb-3 text-sm font-semibold text-zinc-300">Safety checks</h2>
-        <ul className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-          <CheckRow label="Mint authority renounced" value={coin.mintAuthorityRevoked} />
-          <CheckRow label="Freeze authority renounced" value={coin.freezeAuthorityRevoked} />
-          <CheckRow label="Liquidity locked or burned" value={coin.lpBurnedOrLocked} />
-        </ul>
-        {coin.reasons.length > 0 && (
-          <ul className="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm text-zinc-400">
-            {coin.reasons.map((r, i) => (
-              <li key={i}>⚠️ {r}</li>
-            ))}
-          </ul>
-        )}
+        <h2 className="mb-3 text-sm font-semibold text-zinc-300">
+          How the {coin.safetyScore}% safety score is calculated
+        </h2>
+        <ScoreBreakdown items={coin.breakdown} />
+        {(() => {
+          const shown = new Set(coin.breakdown.map((b) => b.detail));
+          const extra = coin.reasons.filter((r) => !shown.has(r));
+          return extra.length > 0 ? (
+            <ul className="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm text-zinc-400">
+              {extra.map((r, i) => (
+                <li key={i}>⚠️ {r}</li>
+              ))}
+            </ul>
+          ) : null;
+        })()}
       </section>
 
       <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -94,15 +97,5 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-zinc-500">{label}</p>
       <p className="mt-0.5 font-medium text-zinc-200">{value}</p>
     </div>
-  );
-}
-
-function CheckRow({ label, value }: { label: string; value: boolean | null }) {
-  const icon = value === null ? "❔" : value ? "✅" : "❌";
-  return (
-    <li className="flex items-center gap-2">
-      <span>{icon}</span>
-      <span className="text-zinc-300">{label}</span>
-    </li>
   );
 }
