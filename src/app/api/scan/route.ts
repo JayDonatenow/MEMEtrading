@@ -51,6 +51,7 @@ async function runScan(request: Request) {
         clusteredPct: evaluation.clusteredPct,
         mintRevoked: evaluation.mintAuthorityRevoked,
         freezeRevoked: evaluation.freezeAuthorityRevoked,
+        lpBurnedOrLocked: evaluation.lpBurnedOrLocked,
       },
     });
 
