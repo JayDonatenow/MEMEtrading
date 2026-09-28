@@ -1,6 +1,12 @@
 import type { DexScreenerPair } from "@/lib/dexscreener";
 import { computeSafetyScore, type SafetyScoreInput } from "@/lib/safety-score";
-import { findLinkedWallets, getMintAuthorityInfo, getTopHolders, summarizeClustering } from "@/lib/solana";
+import {
+  findLinkedWallets,
+  getMintAuthorityInfo,
+  getRpcHostForDebug,
+  getTopHolders,
+  summarizeClustering,
+} from "@/lib/solana";
 
 export function pairAgeMinutes(pair: DexScreenerPair): number | null {
   if (!pair.pairCreatedAt) return null;
@@ -48,6 +54,9 @@ export interface FullEvaluation {
   mintAuthorityRevoked: boolean | null;
   freezeAuthorityRevoked: boolean | null;
   lpBurnedOrLocked: boolean | null;
+  // TEMPORARY diagnostic fields — remove once the Helius rollout is verified.
+  _debugRpcHost?: string;
+  _debugHoldersError?: string;
 }
 
 // Full score including on-chain checks — used for the coin detail page, where the extra
@@ -55,9 +64,13 @@ export interface FullEvaluation {
 export async function fullEvaluate(pair: DexScreenerPair): Promise<FullEvaluation> {
   const mintAddress = pair.baseToken.address;
 
+  let debugHoldersError: string | undefined;
   const [authorityInfo, holders] = await Promise.all([
     getMintAuthorityInfo(mintAddress),
-    getTopHolders(mintAddress, 10).catch(() => []),
+    getTopHolders(mintAddress, 10).catch((e) => {
+      debugHoldersError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+      return [];
+    }),
   ]);
 
   // Exclude the largest holder if it's overwhelmingly likely the LP/pool itself (no reliable
@@ -94,5 +107,7 @@ export async function fullEvaluate(pair: DexScreenerPair): Promise<FullEvaluatio
     mintAuthorityRevoked: authorityInfo?.mintAuthorityRevoked ?? null,
     freezeAuthorityRevoked: authorityInfo?.freezeAuthorityRevoked ?? null,
     lpBurnedOrLocked,
+    _debugRpcHost: getRpcHostForDebug(),
+    _debugHoldersError: debugHoldersError,
   };
 }
