@@ -25,9 +25,6 @@ export interface CoinDetail {
   mintAuthorityRevoked: boolean | null;
   freezeAuthorityRevoked: boolean | null;
   lpBurnedOrLocked: boolean | null;
-  // TEMPORARY diagnostic fields — remove once the Helius rollout is verified.
-  _debugRpcHost?: string;
-  _debugHoldersError?: string;
 }
 
 // Fetches live market + on-chain data for a coin, upserts it into the DB, and (when something
@@ -125,7 +122,5 @@ export async function getCoinDetail(mintAddress: string): Promise<CoinDetail | n
     mintAuthorityRevoked: evaluation.mintAuthorityRevoked,
     freezeAuthorityRevoked: evaluation.freezeAuthorityRevoked,
     lpBurnedOrLocked: evaluation.lpBurnedOrLocked,
-    _debugRpcHost: evaluation._debugRpcHost,
-    _debugHoldersError: evaluation._debugHoldersError,
   };
 }

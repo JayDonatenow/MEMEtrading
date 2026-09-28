@@ -8,16 +8,6 @@ function getConnection(): Connection {
   return connection;
 }
 
-// TEMPORARY diagnostic — reveals only the RPC hostname (never the key/secret), to confirm
-// which endpoint a deployment is actually using. Remove once the Helius rollout is verified.
-export function getRpcHostForDebug(): string {
-  try {
-    return new URL(RPC_URL).hostname;
-  } catch {
-    return "invalid-url";
-  }
-}
-
 export interface MintAuthorityInfo {
   mintAuthorityRevoked: boolean;
   freezeAuthorityRevoked: boolean;
